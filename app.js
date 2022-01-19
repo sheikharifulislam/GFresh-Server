@@ -51,7 +51,12 @@ async function run() {
             let products;
             if(productId) {
                 if(productId.length === 24) {
-                    products = await allProducts.findOne({_id: objectId(productId)});
+                    products = await allProducts.findOne(
+                        {
+                            _id: objectId(productId)
+                        }
+                    );
+                    
                     res.send(products)
                 }
                 else {
@@ -59,11 +64,35 @@ async function run() {
                 }
             }
             else if(category) {
-                products = await allProducts.find({category: {$regex: ".*" + category + ".*", $options: 'im'}}).toArray();
+                products = await allProducts.find(
+                    {
+                        category: {
+                            $regex: ".*" + category + ".*", $options: 'im'
+                        }
+                    }
+                ).toArray();
+
                 res.send(products);
             }
             else if(productName) {
-                products = await allProducts.find({productName: {$regex: ".*" + productName + ".*", $options: 'im'}}).toArray();
+                products = await allProducts.find(
+                    {
+                        $or: [
+                           {
+                            productName: {
+                                $regex: ".*" + productName + ".*", $options: 'im'
+                            },
+                           },
+                           {
+                                category: {
+                                    $regex: ".*" + productName + ".*", $options: 'im'
+                                }
+                           }
+                        ]
+                    }
+                )                
+                .toArray();                
+
                 res.send(products);
             }
             else if(limit && skip) {
@@ -81,6 +110,7 @@ async function run() {
                     ]
                 )
                 .toArray();
+
                 res.send(products);
             }
         })
@@ -92,7 +122,12 @@ async function run() {
 
         app.get('/check-admin',async(req,res) => {
             const {userEmail} = req.query;
-            const result = await allUsers.findOne({email: userEmail});
+            const result = await allUsers.findOne(
+                {
+                    email: userEmail
+                }
+            );
+
             res.status(200).json({isAdmin: result.isAdmin});           
         })
 
