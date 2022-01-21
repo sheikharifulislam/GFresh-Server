@@ -127,8 +127,14 @@ async function run() {
                     email: userEmail
                 }
             );
+    
+            let isAdmin = false;
 
-            res.status(200).json({isAdmin: result.isAdmin});           
+            if(user?.role === 'admin') {
+                isAdmin = true;
+            }
+
+            res.status(200).json({isAdmin});
         })
 
         app.get('/all-users',async(req,res) => {
