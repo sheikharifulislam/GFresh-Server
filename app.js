@@ -122,7 +122,7 @@ async function run() {
 
         app.get('/check-admin',async(req,res) => {
             const {userEmail} = req.query;
-            const result = await allUsers.findOne(
+            const user = await allUsers.findOne(
                 {
                     email: userEmail
                 }
