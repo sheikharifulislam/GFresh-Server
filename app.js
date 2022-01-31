@@ -5,6 +5,7 @@ const dotenv = require('dotenv').config();
 const cors = require('cors');
 const multer = require('multer');
 const upload = require('./multer/multer.config');
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 const app = express();
 
 
@@ -205,6 +206,22 @@ async function run() {
                 addReview,
                 productReview,
             })
+        })
+
+        app.post('/create-payment-intent', async(req, res) => {
+            let {amount} = req.body;          
+            const {quantity} = req.body; 
+            const totalAmount = (amount * 100) * quantity;            
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: totalAmount,
+                currency: 'usd',
+                payment_method_types: ['card'],
+            });
+            res.json({
+                clientSecret: paymentIntent.client_secret,
+            });
+
+            
         })
     }
     catch(error) {
