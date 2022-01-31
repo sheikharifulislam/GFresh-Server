@@ -222,7 +222,9 @@ async function run() {
                     clientSecret: paymentIntent.client_secret,
                 });
             }
-            
+            else {
+                res.status(204).json('invalid amount and quantity');
+            }
 
             
         })
