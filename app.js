@@ -47,10 +47,14 @@ async function run() {
             const {productId} = req.query;
             const {category} = req.query;
             const {productName} = req.query;
-            const {limit} = req.query;
-            const {skip} = req.query;
+            const {allProductLength} = req.query;           
             let products;
-            if(productId) {
+
+            if(allProductLength) {
+                const count = await allProducts({}).count();
+                res.send(count);
+            }
+            else if(productId) {
                 if(productId.length === 24) {
                     products = await allProducts.findOne(
                         {
@@ -95,12 +99,8 @@ async function run() {
                 .toArray();                
 
                 res.send(products);
-            }
-            else if(limit && skip) {
-                products = await allProducts.find({}).skip(parseInt(skip)).limit(parseInt(limit)).toArray();
-                res.send(products);
-            }
-            else if(productId !== true && category !== true && productName !== true && limit !== true) {
+            }            
+            else if(productId !== true && category !== true && productName !== true) {
                 products = await allProducts.aggregate(
                     [
                         {
@@ -176,10 +176,24 @@ async function run() {
             res.status(201).json(result);            
         })
 
-        app.post('add-order',async(req,res) => {
-            const order = req.body;
-            const result = await allOrders.insertOne(order);
-            res.status(200).json(result);
+        app.post('/add-order',async(req,res) => {
+            const orderData = req.body;
+            const {productId} = req.query;
+            const result = await allOrders.insertOne(orderData);
+            const updateProductQuantity = await allProducts.updateMany(
+                {
+                    _id: objectId(productId),
+                },
+                {
+                    $inc: {
+                        quantity: - parseInt(orderData.orderInfo.orderQuantity),
+                    }
+                } 
+            )
+            res.status(200).json({
+                updateProductQuantity,
+                result,
+            });
         })
 
         app.post('/add-review',async(req,res) => {
@@ -211,7 +225,7 @@ async function run() {
         app.post('/create-payment-intent', async(req, res) => {
             let {amount} = req.body;          
             const {quantity} = req.body; 
-            const totalAmount = (amount * 100) * quantity;                 
+            const totalAmount = (amount * 100) * quantity;                      
             if(totalAmount) {
                 const paymentIntent = await stripe.paymentIntents.create({
                     amount: totalAmount,
