@@ -46,15 +46,10 @@ async function run() {
         app.get('/all-products',async(req,res) => {
             const {productId} = req.query;
             const {category} = req.query;
-            const {productName} = req.query;
-            const {allProductLength} = req.query;           
+            const {productName} = req.query;                   
             let products;
 
-            if(allProductLength) {
-                const count = await allProducts({}).count();
-                res.send(count);
-            }
-            else if(productId) {
+            if(productId) {
                 if(productId.length === 24) {
                     products = await allProducts.findOne(
                         {
@@ -143,6 +138,61 @@ async function run() {
             res.status(200).json(users);
         })
 
+        app.get('/total-products-length', async(req,res) => {
+            const result = await allProducts.find({}).count();
+            res.status(200).json(result);
+        });
+
+        app.get('/total-order-length',async(req, res) => {
+            const {orderStatus} = req.query;
+            const {userEmail} = req.query;                 
+            let result;
+            if(orderStatus && userEmail) {
+                result = await allOrders.find(
+                    {
+                        $and: [
+                            {
+                               'orderInfo.orderStatus': orderStatus,
+                            },
+                            {
+                                'userInfo.userEmail': userEmail,
+                            }
+                        ]
+                    }
+                )
+                .count();                
+                res.status(200).json(result);
+            }
+            else if(userEmail) {
+                result = await allOrders.find(
+                    {
+                        'userInfo.userEmail': userEmail,
+                    }
+                )
+                .count();
+                res.status(200).json(result);
+            }
+            else if(orderStatus) {
+                result = await allOrders.find(
+                    {
+                       'orderInfo.orderStatus':orderStatus,
+                    }                    
+                )
+                .count();
+
+                res.status(200).json(result);
+            }        
+            else if(orderStatus !== true && userEmail !== true) {
+                result = await allOrders.find({}).count();
+                res.status(200).json(result);
+            }           
+        })
+
+        app.get('/total-user-length', async (req, res) => {
+            const result = await allUsers.find({}).count();
+            res.status(200).json(result);
+        })
+
         //ALL POST API
 
         app.post('/add-product',upload.single("productImage"), async (req, res) => {
@@ -180,7 +230,7 @@ async function run() {
             const orderData = req.body;
             const {productId} = req.query;
             const result = await allOrders.insertOne(orderData);
-            const updateProductQuantity = await allProducts.updateMany(
+            const updateProductQuantity = await allProducts.updateOne(
                 {
                     _id: objectId(productId),
                 },
@@ -189,7 +239,7 @@ async function run() {
                         quantity: - parseInt(orderData.orderInfo.orderQuantity),
                     }
                 } 
-            )
+            );
             res.status(200).json({
                 updateProductQuantity,
                 result,
