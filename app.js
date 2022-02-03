@@ -6,6 +6,7 @@ const cors = require('cors');
 const multer = require('multer');
 const upload = require('./multer/multer.config');
 const stripe = require('stripe')(process.env.STRIPE_KEY);
+const fs = require('fs').promises;
 const app = express();
 
 
@@ -111,6 +112,18 @@ async function run() {
             }
         })
 
+        app.get('/manage-all-products', async (req, res) => {
+            const {currentPage} = req.query;
+            const {size} = req.query;
+            // console.log(currentPage * size);            
+            const result = await allProducts.find({}).skip(currentPage * size).limit(parseInt(size)).toArray();
+            const count = await allProducts.find({}).count();
+            res.status(200).json({
+                allProducts: result,
+                count,
+            });            
+        })
+
         app.get('/slider-data',async(req,res) => {
             const result = await slider.find({}).toArray();
             res.send(result);
@@ -138,77 +151,26 @@ async function run() {
             res.status(200).json(users);
         })
 
-        app.get('/total-products-length', async(req,res) => {
-            const result = await allProducts.find({}).count();
-            res.status(200).json(result);
-        });
-
-        app.get('/total-order-length',async(req, res) => {
-            const {orderStatus} = req.query;
-            const {userEmail} = req.query;                 
-            let result;
-            if(orderStatus && userEmail) {
-                result = await allOrders.find(
-                    {
-                        $and: [
-                            {
-                               'orderInfo.orderStatus': orderStatus,
-                            },
-                            {
-                                'userInfo.userEmail': userEmail,
-                            }
-                        ]
-                    }
-                )
-                .count();                
-                res.status(200).json(result);
-            }
-            else if(userEmail) {
-                result = await allOrders.find(
-                    {
-                        'userInfo.userEmail': userEmail,
-                    }
-                )
-                .count();
-                res.status(200).json(result);
-            }
-            else if(orderStatus) {
-                result = await allOrders.find(
-                    {
-                       'orderInfo.orderStatus':orderStatus,
-                    }                    
-                )
-                .count();
-
-                res.status(200).json(result);
-            }        
-            else if(orderStatus !== true && userEmail !== true) {
-                result = await allOrders.find({}).count();
-                res.status(200).json(result);
-            }           
-        })
-
-        app.get('/total-user-length', async (req, res) => {
-            const result = await allUsers.find({}).count();
-            res.status(200).json(result);
-        })
-
         //ALL POST API
 
         app.post('/add-product',upload.single("productImage"), async (req, res) => {
-
+            
            const product = {
                ...req.body,
                productImage: req.file.path,
                reviews: [],
                reviewStar: 0,                            
            };
-           product.mainPrice = parseInt(product.mainPrice);
-           product.offerPrice = parseInt(product.offerPrice);        
+           product.mainPrice = parseInt(product.mainPrice);                  
            product.quantity = parseInt(product.quantity);       
-           
+           if(product.offerPrice !== 'null') {
+                product.offerPrice = parseInt(product.offerPrice); 
+           }
+           else if(product.offerPrice === 'null') {
+            product.offerPrice = null;
+           }          
            const result = await allProducts.insertOne(product);
-           res.send(result);        
+           res.status(201).json(result);        
         });
         
         app.post('/add-slider',upload.single("sliderImage"), async(req, res) => {
@@ -217,7 +179,7 @@ async function run() {
                 sliderImage: req.file.path,
             }
             const result = await slider.insertOne(sliderData);
-            res.send(result);            
+            res.status(201).json(result);            
         })
 
         app.post('/add-user',async(req,res) => {
@@ -240,7 +202,7 @@ async function run() {
                     }
                 } 
             );
-            res.status(200).json({
+            res.status(201).json({
                 updateProductQuantity,
                 result,
             });
@@ -282,7 +244,7 @@ async function run() {
                     currency: 'usd',
                     payment_method_types: ['card'],               
                   });
-                res.json({
+                res.status(201).json({
                     clientSecret: paymentIntent.client_secret,
                 });
             }
@@ -292,6 +254,50 @@ async function run() {
 
             
         })
+
+        //ALL PATCH AND PUT API
+        app.put('/update-product-info',upload.single("productImage"), async (req, res) => {
+            const {productId} = req.query;
+            const {imagePath} = req.query;
+            const updateProductInfo = {
+                ...req.body,
+                productImage: req.file.path,
+                reviews: [],
+                reviewStar: 0,                            
+            };
+            updateProductInfo.mainPrice = parseInt(updateProductInfo.mainPrice);                  
+            updateProductInfo.quantity = parseInt(updateProductInfo.quantity);       
+            if(updateProductInfo.offerPrice !== 'null') {
+                updateProductInfo.offerPrice = parseInt(updateProductInfo.offerPrice); 
+            }
+            else if(updateProductInfo.offerPrice === 'null') {
+                updateProductInfo.offerPrice = null;
+            } 
+            const result = await allProducts.updateOne(
+                {
+                    _id: objectId(productId),
+                },
+                {
+                    $set: {
+                        ...updateProductInfo,
+                    }
+                }
+            )
+            await fs.unlink(`./${imagePath}`);
+            res.status(200).json(result);   
+            
+        })
+
+        //ALL DELETE API
+        app.delete('/delete-single-product',async(req,res) => {
+            const {productId} = req.query;
+            const {imagePath} = req.query;
+            const result = await allProducts.deleteOne({_id: objectId(productId)});
+            await fs.unlink(`./${imagePath}`);
+            res.status(200).json(result);  
+        })
+       
+
     }
     catch(error) {
         console.log(error.message);
