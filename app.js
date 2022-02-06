@@ -256,37 +256,37 @@ async function run() {
         })
 
         //ALL PATCH AND PUT API
-        app.put('/update-product-info',upload.single("productImage"), async (req, res) => {
-            const {productId} = req.query;
-            const {imagePath} = req.query;
-            const updateProductInfo = {
-                ...req.body,
-                productImage: req.file.path,
-                reviews: [],
-                reviewStar: 0,                            
-            };
-            updateProductInfo.mainPrice = parseInt(updateProductInfo.mainPrice);                  
-            updateProductInfo.quantity = parseInt(updateProductInfo.quantity);       
-            if(updateProductInfo.offerPrice !== 'null') {
-                updateProductInfo.offerPrice = parseInt(updateProductInfo.offerPrice); 
-            }
-            else if(updateProductInfo.offerPrice === 'null') {
-                updateProductInfo.offerPrice = null;
-            } 
-            const result = await allProducts.updateOne(
-                {
-                    _id: objectId(productId),
-                },
-                {
-                    $set: {
-                        ...updateProductInfo,
-                    }
-                }
-            )
-            await fs.unlink(`./${imagePath}`);
-            res.status(200).json(result);   
+        // app.patch('/update-product-info', async (req, res) => {
+        //     const {productId} = req.query;
+        //     const {imagePath} = req.query;            
+        //     const updateProductInfo = {
+        //         ...req.body,
+        //         productImage: req.file.path,
+        //         reviews: [],
+        //         reviewStar: 0,                            
+        //     };
+        //     updateProductInfo.mainPrice = parseInt(updateProductInfo.mainPrice);                  
+        //     updateProductInfo.quantity = parseInt(updateProductInfo.quantity);       
+        //     if(updateProductInfo.offerPrice !== 'null') {
+        //         updateProductInfo.offerPrice = parseInt(updateProductInfo.offerPrice); 
+        //     }
+        //     else if(updateProductInfo.offerPrice === 'null') {
+        //         updateProductInfo.offerPrice = null;
+        //     } 
+        //     const result = await allProducts.updateOne(
+        //         {
+        //             _id: objectId(productId),
+        //         },
+        //         {
+        //             $set: {
+        //                 ...updateProductInfo,
+        //             }
+        //         }
+        //     )
+        //     await fs.unlink(`./${imagePath}`);
+        //     res.status(200).json(result);  
             
-        })
+        // })
 
         //ALL DELETE API
         app.delete('/delete-single-product',async(req,res) => {
