@@ -12,7 +12,7 @@ async function conntectDatabase() {
         console.log(e.message);
     }
     finally{
-        await client.close();
+        // await client.close();
     }
 }
 

@@ -1,14 +1,15 @@
+const fs = require('fs').promises;
+const stripe = require('stripe')(process.env.STRIPE_KEY);
+const objectId = require('mongodb').ObjectId;
+const dotenv = require('dotenv').config();
+const databaseModel = require('../model/databaseModel');
 const {
     allProductsCollection,
     sliderCollection,
     allUsersCollection,
     allOrdersCollection,
     allReviewsCollection,
-} = require('../model/databaseModel');
-const fs = require('fs').promises;
-const stripe = require('stripe')(process.env.STRIPE_KEY);
-const objectId = require('mongodb').ObjectId;
-const dotenv = require('dotenv').config();
+} = databaseModel();
 
 const defaultRoute = async(req,res) => {
     res.send("Well Come");
@@ -22,7 +23,7 @@ const allProducts = async(req,res) => {
 
     if(productId) {
         if(productId.length === 24) {
-            products = await  allProductsCollection.findOne(
+            products = await allProductsCollection.findOne(
                 {
                     _id: objectId(productId)
                 }
@@ -35,7 +36,7 @@ const allProducts = async(req,res) => {
         }
     }
     else if(category) {
-        products = await  allProductsCollection.find(
+        products = await allProductsCollection.find(
             {
                 category: {
                     $regex: ".*" + category + ".*", $options: 'im'
@@ -46,7 +47,7 @@ const allProducts = async(req,res) => {
         res.send(products);
     }
     else if(productName) {
-        products = await  allProductsCollection.find(
+        products = await allProductsCollection.find(
             {
                 $or: [
                    {
@@ -67,7 +68,7 @@ const allProducts = async(req,res) => {
         res.send(products);
     }            
     else if(productId !== true && category !== true && productName !== true) {
-        products = await  allProductsCollection.aggregate(
+        products = await allProductsCollection.aggregate(
             [
                 {
                     $sample: {
@@ -85,8 +86,8 @@ const allProducts = async(req,res) => {
 const manageAllProducts = async (req, res) => {
     const {currentPage} = req.query;
     const {size} = req.query;                
-    const result = await  allProductsCollection.find({}).skip(currentPage * size).limit(parseInt(size)).toArray();
-    const count = await  allProductsCollection.find({}).count();
+    const result = await allProductsCollection.find({}).skip(currentPage * size).limit(parseInt(size)).toArray();
+    const count = await allProductsCollection.find({}).count();
     res.status(200).json({
         allProducts: result,
         count,
@@ -138,7 +139,7 @@ const addProduct = async (req, res) => {
     else if(product.offerPrice === 'null') {
      product.offerPrice = null;
     }          
-    const result = await  allProductsCollection.insertOne(product);
+    const result = await allProductsCollection.insertOne(product);
     res.status(201).json(result);        
  }
 
@@ -161,7 +162,7 @@ const addOrder = async(req,res) => {
     const orderData = req.body;
     const {productId} = req.query;
     const result = await allOrdersCollection.insertOne(orderData);
-    const updateProductQuantity = await  allProductsCollection.updateOne(
+    const updateProductQuantity = await allProductsCollection.updateOne(
         {
             _id: objectId(productId),
         },
@@ -182,7 +183,7 @@ const addReview = async(req,res) => {
     const review = req.body;
     review.reviewStar = parseInt(review.reviewStar);
     const addReview = await allReviewsCollection.insertOne(review);
-    const productReview = await  allProductsCollection.updateOne(
+    const productReview = await allProductsCollection.updateOne(
         {
             _id: objectId(productId),
         },
@@ -253,7 +254,7 @@ const updateProductInfo = async (req, res) => {
     else if(updateProductInfo.offerPrice === 'null') {
         updateProductInfo.offerPrice = null;
     } 
-    const result = await  allProductsCollection.updateOne(
+    const result = await allProductsCollection.updateOne(
         {
             _id: objectId(productId),
         },
@@ -271,7 +272,7 @@ const updateProductInfo = async (req, res) => {
 const deleteSingleProduct = async(req,res) => {
     const {productId} = req.query;
     const {imagePath} = req.query;
-    const result = await  allProductsCollection.deleteOne({_id: objectId(productId)});
+    const result = await allProductsCollection.deleteOne({_id: objectId(productId)});
     await fs.unlink(`./${imagePath}`);
     res.status(200).json(result);  
 }

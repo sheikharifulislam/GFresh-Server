@@ -20,7 +20,7 @@ const {
 //ALL GET API
 route.get('/',defaultRoute)
 route.get('/all-products', allProducts)
-route.get('/manage-all-products', manageAllProducts)
+route.get('/manage-all-products',manageAllProducts)
 route.get('/slider-data', sliderData)
 route.get('/check-admin', checkAdmin)
 route.get('/all-users', allUsers)
