@@ -6,7 +6,7 @@ const uploadFolder = "./uploads";
 
 // Define The Storage
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: (req, file, cb) => {      
       cb(null, uploadFolder);
     },
     filename: (req, file, cb) => {
@@ -30,7 +30,7 @@ const upload = multer({
     limits: {
       fileSize: 3000000, // 3MB
     },
-    fileFilter: (req, file, cb) => {
+    fileFilter: (req, file, cb) => {            
         if (
             file.mimetype === "image/png" ||
             file.mimetype === "image/jpg" ||
