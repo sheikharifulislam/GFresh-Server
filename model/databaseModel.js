@@ -20,18 +20,18 @@ conntectDatabase();
 
 function databasebaseModel() {
     const database = client.db("GFresh");
-    const allProducts = database.collection("All_products");
-    const slider = database.collection("Slider");
-    const allUsers = database.collection("All_users");
-    const allOrders = database.collection("All_Orders");
-    const allReviews = database.collection("All_Reviews");
+    const allProductsCollection = database.collection("All_products");
+    const sliderCollection = database.collection("Slider");
+    const allUsersCollection = database.collection("All_users");
+    const allOrdersCollection = database.collection("All_Orders");
+    const allReviewsCollection = database.collection("All_Reviews");
 
     return {
-        allProducts,
-        slider,
-        allUsers,
-        allOrders,
-        allReviews,
+        allProductsCollection,
+        sliderCollection,
+        allUsersCollection,
+        allOrdersCollection,
+        allReviewsCollection,
     }
 }
 

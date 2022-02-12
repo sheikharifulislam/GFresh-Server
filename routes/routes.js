@@ -1,5 +1,5 @@
 const route = require('express').Router();
-const upload = require('./multer/multer.config');
+const upload = require('../multer/multer.config');
 const {
     defaultRoute,
     allProducts,
@@ -37,4 +37,6 @@ route.post('/create-payment-intent', createPaymentIntent)
 route.patch('/update-product-info',upload.single("productImage"), updateProductInfo)
 
 //ALL DELETE API
-route.delete('/delete-single-product', deleteSingleProduct)
+route.delete('/delete-single-product', deleteSingleProduct);
+
+module.exports = route;

@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const routes = require('./routes/routes');
 const app = express();
-
 
 app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static('uploads'));
+app.use(routes)
 
 app.use((err,req,res,next) => {
     if(err) {
@@ -22,9 +23,6 @@ app.use((err,req,res,next) => {
     }
 })
 
-app.get('/',async(req,res) => {
-    res.send("Ariful");
-})
 
 
 const port = process.env.PORT || 5000;
