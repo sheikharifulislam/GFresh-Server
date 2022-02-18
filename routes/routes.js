@@ -4,6 +4,7 @@ const {
     defaultRoute,
     allProducts,
     manageAllProducts,
+    allOrders,
     sliderData,
     checkAdmin,
     allUsers,
@@ -14,27 +15,30 @@ const {
     addReview,
     createPaymentIntent,
     updateProductInfo,
-    deleteSingleProduct,
+    updateOrderStatus,
+    deleteSingleProduct,   
 } = require('../controller/controller');
 
 //ALL GET API
 route.get('/',defaultRoute)
-route.get('/all-products', allProducts)
-route.get('/manage-all-products',manageAllProducts)
-route.get('/slider-data', sliderData)
-route.get('/check-admin', checkAdmin)
-route.get('/all-users', allUsers)
+route.get('/all-products', allProducts);
+route.get('/manage-all-products',manageAllProducts);
+route.get('/all-orders',allOrders);
+route.get('/slider-data', sliderData);
+route.get('/check-admin', checkAdmin);
+route.get('/all-users', allUsers);
 
 //ALL POST API
 route.post('/add-product',upload.single("productImage"), addProduct);
-route.post('/add-slider',upload.single("sliderImage"), addSlider)
-route.post('/add-user', addUser)
-route.post('/add-order', addOrder)
+route.post('/add-slider',upload.single("sliderImage"), addSlider);
+route.post('/add-user', addUser);
+route.post('/add-order', addOrder);
 route.post('/add-review', addReview)
-route.post('/create-payment-intent', createPaymentIntent)
+route.post('/create-payment-intent', createPaymentIntent);
 
 //ALL PATCH AND PUT API
-route.patch('/update-product-info',upload.single("productImage"), updateProductInfo)
+route.patch('/update-product-info',upload.single("productImage"), updateProductInfo);
+route.patch('/update-order-status',updateOrderStatus);
 
 //ALL DELETE API
 route.delete('/delete-single-product', deleteSingleProduct);

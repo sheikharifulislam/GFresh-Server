@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
+const dotenv = require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const objectId = require('mongodb').ObjectId;
-const dotenv = require('dotenv').config();
 const databaseModel = require('../model/databaseModel');
 const {
     allProductsCollection,
@@ -92,6 +92,54 @@ const manageAllProducts = async (req, res) => {
         allProducts: result,
         count,
     });            
+}
+
+const allOrders = async(req,res) => {
+    const {userEmail} = req.query;
+    const {currentPage} = req.query;
+    const {size} = req.query;
+    const {orderStatus} = req.query;    
+    let count;
+    let orders;     
+    if((userEmail && currentPage && size)) {
+        count = await allOrdersCollection.find({
+            'userInfo.userEmail': userEmail,
+        })
+        .count();
+        orders = await allOrdersCollection.find({
+            'userInfo.userEmail': userEmail,
+        })        
+        .skip(currentPage * size)
+        .limit(parseInt(size))
+        .toArray();        
+    }
+    else if(orderStatus && currentPage && size) {
+        count = await allOrdersCollection.find(
+            {
+                'orderInfo.orderStatus': orderStatus,
+            }
+        )
+        .count();
+        orders = await allOrdersCollection.find(
+            {
+                'orderInfo.orderStatus': orderStatus,
+            }
+        )
+        .skip(currentPage * size)
+        .limit(parseInt(size))
+        .toArray();        
+    }
+    else if(userEmail !== true && orderStatus !== true && currentPage && size) {
+        count = await allOrdersCollection.find({}).count();
+        orders = await allOrdersCollection.find({})
+        .skip(currentPage * size)
+        .limit(parseInt(size))
+        .toArray();        
+    }    
+    res.status(200).json({
+        allOrders: orders,
+        count,
+    });
 }
 
 const sliderData = async(req,res) => {
@@ -269,6 +317,25 @@ const updateProductInfo = async (req, res) => {
     res.end();
 }
 
+const updateOrderStatus = async(req,res) => {
+    const {orderId} = req.query;
+    const {updateStatus} = req.body;
+    const result = await allOrdersCollection.updateOne(
+        {
+            _id: objectId(orderId),
+        },
+        {
+            $set: {
+                'orderInfo.orderStatus': updateStatus
+            }
+        }
+    );
+
+    res.status(201).json(result);
+}
+
+//ALL DELETE API
+
 const deleteSingleProduct = async(req,res) => {
     const {productId} = req.query;
     const {imagePath} = req.query;
@@ -281,6 +348,7 @@ module.exports = {
     defaultRoute,
     allProducts,
     manageAllProducts,
+    allOrders,
     sliderData,
     checkAdmin,
     allUsers,
@@ -291,5 +359,6 @@ module.exports = {
     addReview,
     createPaymentIntent,
     updateProductInfo,
-    deleteSingleProduct,
+    updateOrderStatus,
+    deleteSingleProduct,    
 }
