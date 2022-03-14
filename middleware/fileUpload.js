@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 
 // Create Upload Folder
-const uploadFolder = "./uploads";
+const uploadFolder = "./assets";
 
 // Define The Storage
 const storage = multer.diskStorage({
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
   });
 
 
-const upload = multer({
+const fileUpload = multer({
     storage: storage,
     limits: {
       fileSize: 3000000, // 3MB
@@ -43,4 +43,4 @@ const upload = multer({
     }
   });
   
-  module.exports = upload;
+  module.exports = fileUpload;
