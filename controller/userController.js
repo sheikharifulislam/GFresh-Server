@@ -13,8 +13,7 @@ exports.allUsers = async(req, res, next) => {
 
 exports.checkAdmin = async(req, res, next) => {
     try{
-        const {userEmail} = req.query;
-        console.log(userEmail);
+        const {userEmail} = req.query;        
         const user = await allUsersCollection.findOne(
             {
                 email: userEmail

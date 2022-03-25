@@ -1,5 +1,6 @@
 const databaseModel = require('../model/databaseModel');
-const {allOrdersCollection} = databaseModel();
+const {allOrdersCollection, allProductsCollection} = databaseModel();
+const objectId = require('mongodb').ObjectId;
 
 exports.allOrders = async(req, res, next) => {
     try{
@@ -75,6 +76,7 @@ exports.addOrder = async(req, res, next) => {
         });
     }
     catch(error) {
+        console.log(error.message);
         next(error);
     }
 }

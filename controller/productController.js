@@ -1,6 +1,7 @@
 const databaseModel = require('../model/databaseModel');
 const {allProductsCollection} = databaseModel();
 const fs = require('fs').promises;
+const objectId = require('mongodb').ObjectId;
 
 exports.allProducts = async(req, res,next) => {
     try{
@@ -16,7 +17,7 @@ exports.allProducts = async(req, res,next) => {
                     }
                 );
                 
-                res.send(products)
+                res.status(200).json(products);
             }
             else {
                 res.status(500).json("Please Provide A Valid Id");

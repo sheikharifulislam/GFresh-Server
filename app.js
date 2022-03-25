@@ -1,25 +1,31 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
-const routes = require('./routes/routes');
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 app.use('/assets', express.static('assets'));
-app.use(routes)
 
-app.use((err,req,res,next) => {
-    if(err) {
-        if(err instanceof multer.MulterError) {
-            res.status(500).json("Thre was an upload error")
-        }
-        else {
-            res.status(500).json(err.message)
-        }
+// Imports Routes From Routes Directory
+const setRoutes = require('./routes/routes');
+
+// Imports Middlewate From Middleware Directory
+const errorHandler = require('./middleware/errorHandler');
+
+// Using Routes From Routes Directory
+setRoutes(app);
+
+// Using Middleware From Middleware Directory
+app.use(errorHandler);
+
+app.get('/',async(req, res) => {
+    try{
+        res.send('Well Come');
     }
-    else {
-        res.status(200).json("Success")
+    catch(err){
+        res.status(500).json({
+            message: 'Internal Server Error',
+        })
     }
 })
 
